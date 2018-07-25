@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DataAnalyses>
+    <!-- 日志收集服务端地址 -->
+    <SDN>
+        <version>1</version>
+        <Address>
+            <master>10.160.71.36:50030</master>
+            <slaver>192.168.10.61:50031</slaver>
+        </Address>
+        <FlowControl>
+            <!-- 每秒最大传输字节 (单位：KB/s)-->
+            <maxBandWidth>1024000</maxBandWidth>
+            <!-- 共用区域和预留区域比列 (默认值：60) -->
+            <ratio>60</ratio>
+            <!-- 传输包大小默认设置：max和min两个值 -->
+            <max>5120</max>
+            <min>1024</min>
+            <rate>100</rate>
+            <!-- 策略 -->
+            <strategy>0</strategy>
+            <!-- 时段 -->
+            <period></period>
+            <!-- 心跳频率 -->
+            <heartbeatRate>10000</heartbeatRate>
+        </FlowControl>
+        <!-- 白名单 -->
+        <WhiteList>
+            <DataAnalysesClient>
+                <id>client01</id>
+                <!-- 汇报日志时本地监听端口 -->
+                <localAddress>10.160.71.36:40011</localAddress>
+                <!-- 优先级 (0~9) -->
+                <priority>0</priority>
+                <!-- 有效日志前缀 -->
+                <mark>00,01</mark>
+            </DataAnalysesClient>
+            <DataAnalysesClient>
+                <id>client02</id>
+                <!-- 汇报日志时本地监听端口 -->
+                <localAddress>10.160.71.36:40012</localAddress>
+                <!-- 优先级 (0~9) -->
+                <priority>1</priority>
+                <!-- 有效日志前缀 -->
+                <mark>02,04</mark>
+            </DataAnalysesClient>
+        </WhiteList>
+    </SDN>
+</DataAnalyses>

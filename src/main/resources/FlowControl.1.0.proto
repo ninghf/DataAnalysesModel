@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package FlowControl;
+
+option java_package = "com.butel.data.analyses.mode.protocol.flowcontrol";
+
+option java_outer_classname = "FlowControlConfigReqContent";
+
+message DataAnalysesServerRequest {
+    required string id = 1;
+    required string type = 2;
+}

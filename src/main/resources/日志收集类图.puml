@@ -1,0 +1,71 @@
+@startuml
+interface Runnable
+'interface Queue
+'Class ConcurrentLinkedQueue<E>
+
+class Netty
+
+class DataPacket
+class UserData
+enum ProtocolType
+class DataProtocol
+
+abstract class AbstractQueue
+class DataPacketQueue
+class MongoDataQueue
+
+interface ILoop
+interface Algorithm
+abstract class AlgorithmLoop
+abstract class MongoLoop
+class AlgorithmLoopGroup
+class MongoLoopGroup
+
+Netty "1" o--> "1" DataPacketQueue : offer(顺序添加数据包)
+Netty --> DataPacket : new()
+class DataPacket {
+- Object obj
+- long recvTime
+- ProtocolType type
+- DataProtocol protocol
+- UserData userData
+
++ DataProtocol : parseDataProtocol()
++ UserData : parseUserData()
+}
+
+'数据包之间的关系
+DataPacket "1" o--> "1" UserData
+'队列之间的关系
+DataPacketQueue --|> AbstractQueue
+MongoDataQueue --|> AbstractQueue
+
+class AbstractQueue<T> {
+- Map<Integer, Queue<T>> map;
++ void : init(int queueCount)
++ void : offer(T t)
++ void : bind(ILoop loop)
+}
+
+'计算解析线程/Mongo入库线程
+ILoop --|> Runnable
+AlgorithmLoop ..|> ILoop
+AlgorithmLoop ..|> Algorithm
+
+MongoLoop ..|> ILoop
+
+AlgorithmLoopGroup "1" o--> "n" AlgorithmLoop : new(reflect)
+MongoLoopGroup "1" o--> "n" MongoLoop : new
+
+AlgorithmLoopGroup "1" o--> "1" DataPacketQueue : poll()
+MongoLoopGroup "1" o--> "1" MongoDataQueue : poll()
+
+AlgorithmLoop "1" o--> "1" DataPacketQueue
+MongoLoop "1" o--> "1" MongoDataQueue
+
+interface ILoop<T> {
++ void : bind()
++ void : doBind(Queue<T> queue)
+}
+
+@enduml
