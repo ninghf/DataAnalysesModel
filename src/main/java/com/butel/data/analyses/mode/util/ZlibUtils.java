@@ -11,6 +11,7 @@
 package com.butel.data.analyses.mode.util;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 
 import java.io.ByteArrayOutputStream;
@@ -18,6 +19,8 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 public class ZlibUtils {
+
+    private static final PooledByteBufAllocator ALLOC = PooledByteBufAllocator.DEFAULT;
 
 	/**
 	 * <p>Title: decompress</p>
@@ -30,12 +33,12 @@ public class ZlibUtils {
 	 */
 	public static ByteBuf decompress(ByteBuf buf) throws Exception {
         ByteBuf clone = Unpooled.copiedBuffer(buf);
-        ByteBuf unpack = Unpooled.buffer();
+        ByteBuf unpack = ALLOC.heapBuffer();
         PooledInflater pooledInflater = PooledInflater.newInstance();
         Inflater decompressor = pooledInflater.getInflater();
         try {
 			decompressor.setInput(clone.array());
-            final byte[] data = new byte[1024];
+			final byte[] data = new byte[1024];
 			while (!decompressor.finished()) {
 				int len = decompressor.inflate(data);
                 if (len == 0) break;
@@ -43,7 +46,6 @@ public class ZlibUtils {
 			}
 		} finally {
             pooledInflater.release();
-            clone.clear();
             clone.release();
 		}
 

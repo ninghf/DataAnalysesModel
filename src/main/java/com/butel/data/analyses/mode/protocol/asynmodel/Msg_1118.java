@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -91,7 +92,7 @@ public class Msg_1118 {
             return;
         }
         try {
-            logs = new ArrayList<String>();
+            logs = new LinkedList <>();
             while (unpack.readableBytes() > 0) {
                 long length = unpack.readUnsignedIntLE();
                 String log = unpack.readCharSequence((int) length, Charsets.UTF_8).toString();

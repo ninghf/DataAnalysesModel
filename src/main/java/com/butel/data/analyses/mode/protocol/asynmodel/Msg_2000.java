@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author ninghf
@@ -53,15 +53,10 @@ public class Msg_2000 {
         recyclerHandle.recycle(this);
     }
 
-    private static final AtomicInteger count = new AtomicInteger(0);
-
     public void byteBufToMessage(ByteBuf buf, IStat zlib_before_decompress_stat, IStat zlib_last_decompress_stat, IStat user_data_stat) {
         version = buf.readByte();
         sendTime = buf.readLongLE();
-        int log_check_len = buf.readIntLE();
-        int unpack_before = buf.readableBytes();
-        int packetId = count.getAndIncrement();
-        zlib_before_decompress_stat.add(unpack_before);
+        zlib_before_decompress_stat.add(buf.readableBytes());
         ByteBuf unpack = null;
         try {
             unpack = ZlibUtils.decompress(buf);
@@ -76,31 +71,23 @@ public class Msg_2000 {
         if (unpack == null) {
             return;
         }
-        int unpack_last =unpack.readableBytes();
+        int unpack_last = unpack.readableBytes();
         zlib_last_decompress_stat.add(unpack_last);
-        int check_len = 0;
         try {
             boolean isContinue = true;
-            bufs = new ArrayList<ByteBuf>();
+            bufs = new LinkedList <>();
             while (unpack.readableBytes() > 0 && isContinue) {
                 int len = unpack.readUnsignedShortLE();
                 if (unpack.readableBytes() >= len) {
                     ByteBuf dst = Unpooled.buffer(len);
                     unpack.readBytes(dst, len);
                     bufs.add(dst);
-                    check_len += (len + 2);
                 } else {
                     isContinue = false;
                 }
             }
             user_data_stat.add(bufs.size());
 
-            if (check_len != log_check_len)
-                logger.error("【{}】本次解压缩：【{}】-【{}】, 生成数据【{}】条, 数据包剩余大小【{}】,【{}】-【{}】",
-                        packetId, unpack_before, unpack_last, bufs.size(), unpack.readableBytes(), log_check_len, check_len);
-            if (unpack.readableBytes() > 0)
-                logger.error("本次解压缩：【{}】-【{}】, 生成数据【{}】条, 数据包剩余大小【{}】",
-                    unpack_before, unpack_last, bufs.size(), unpack.readableBytes());
 //            long unpack_end_time = System.currentTimeMillis();
 //            if (LOGGER.isDebugEnabled() && unpack_end_time - clone_start_time > 5) {
 //                LOGGER.debug("Msg_1118解析总耗时【{}】ms，第一次clone耗时【{}】ms，zlib解压缩算法耗时【{}】ms，反序列化耗时【{}】ms",
@@ -111,7 +98,6 @@ public class Msg_2000 {
 //                LOGGER.debug(toString());
 //            }
         } finally {
-            unpack.clear();
             unpack.release();
         }
     }
